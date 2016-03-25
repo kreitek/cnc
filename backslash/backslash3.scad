@@ -23,11 +23,23 @@ module triangulo() {
         polygon([[-ytotal/2, zbase], [-zbase/2, ztotal], [zbase/2, ztotal],  [ytotal/2, zbase]]);
 }
 
-module agujeros(h, r=14) {
-    for (a=[0:90:270])
-        rotate([0, 0, a])
-            translate([r, 0, h/2])
-                cylinder(d=dagujeros2, h=h*1.01, center=true, $fn=20);
+module agujero_i(h, i, r=14) {
+    a = i * 90;
+    rotate([0, 0, a])
+        translate([r, 0, h/2])
+            cylinder(d=dagujeros2, h=h*1.01, center=true, $fn=20);
+}
+
+module agujeros(h, r=14, hull=0) {
+    for (i=[0:3])
+        if (hull > 0) {
+            hull() {
+                translate([0,  +hull/2, 0]) agujero_i(h, i, r);
+                translate([0,  -hull/2, 0]) agujero_i(h, i, r);
+            }
+        } else {
+            agujero_i(h, i, r);
+        }
 }
 
 module agujeros2(h, r=14) {
@@ -64,10 +76,13 @@ module pieza1 () {
             for (x=[fagujeros, 1-fagujeros])
                 for (y=[fagujeros, 1-fagujeros]) 
                     translate([(x-0.5)*xtotal, (y-0.5)*ytotal-ydescentre, zbase/2]) 
-                        cylinder(d=dagujeros, h=zbase*1.01, center=true);
+                        hull() {
+                            translate([-2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
+                            translate([+2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
+                        }
             translate([0, -ydescentre+zbase, zvarilla])
                 rotate([90, 0, 0])
-                    agujeros(2*zbase);
+                    agujeros(2*zbase, hull=4);
                 
         }
 }
