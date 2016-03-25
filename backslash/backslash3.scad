@@ -45,11 +45,12 @@ module agujeros(h, r=14, hull=0) {
 module agujeros2(h, r=14) {
     for (a=[0:90:270])
         rotate([0, 0, a])
-            rotate_extrude(angle=45)
+            rotate_extrude(angle=55)
                 polygon([[r-dagujeros2/2, -0.01], [r+dagujeros2/2, -0.01], [r+dagujeros2/2, h*1.01], [r-dagujeros2/2, h*1.01]]);
 }
 
 module pieza1 () {
+    hull = 3;
     translate([0, ydescentre, 0]) 
         difference() {
             union() {
@@ -71,14 +72,17 @@ module pieza1 () {
             // el agujero del elemento
             translate([0, -ydescentre, zvarilla])
                 rotate([90, 0, 0]) 
-                    cylinder(d=dcilindro*1.2, h=ycilindro, $fn=20, center=true);
+                    hull() {
+                        translate([0, +hull/2, 0]) cylinder(d=dcilindro*1.2, h=ycilindro, $fn=20, center=true);
+                        translate([0, -hull/2, 0]) cylinder(d=dcilindro*1.2, h=ycilindro, $fn=20, center=true);
+                    }
             // los agujeros en la base
             for (x=[fagujeros, 1-fagujeros])
                 for (y=[fagujeros, 1-fagujeros]) 
                     translate([(x-0.5)*xtotal, (y-0.5)*ytotal-ydescentre, zbase/2]) 
                         hull() {
-                            translate([-2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
-                            translate([+2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
+                            translate([-hull/2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
+                            translate([+hull/2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
                         }
             translate([0, -ydescentre+zbase, zvarilla])
                 rotate([90, 0, 0])
