@@ -42,11 +42,17 @@ module agujeros(h, r=14, hull=0) {
         }
 }
 
-module agujeros2(h, r=14) {
+module agujeros2(h, r=14, angle=45) {
     for (a=[0:90:270])
-        rotate([0, 0, a])
-            rotate_extrude(angle=55)
+        rotate([0, 0, a]) {
+            rotate_extrude(angle=angle)
                 polygon([[r-dagujeros2/2, -0.01], [r+dagujeros2/2, -0.01], [r+dagujeros2/2, h*1.01], [r-dagujeros2/2, h*1.01]]);
+            translate([r, 0, h/2]) 
+                cylinder(d=dagujeros2, h=h*1.01, center=true, $fn=20);
+            rotate([0, 0, angle])
+                translate([r, 0, h/2]) 
+                    cylinder(d=dagujeros2, h=h*1.01, center=true, $fn=20);
+        }
 }
 
 module pieza1 () {
