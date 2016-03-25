@@ -42,7 +42,7 @@ module agujeros(h, r=14, hull=0) {
         }
 }
 
-module agujeros2(h, r=14, angle=45) {
+module agujeros2(h, r=14, angle=60) {
     for (a=[0:90:270])
         rotate([0, 0, a]) {
             rotate_extrude(angle=angle)
