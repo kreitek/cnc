@@ -9,17 +9,17 @@ ytuerca2 = 40;   // largo zona tuerca 2  <<< esto es medida 1 tuerca + resorte c
 xtotal = 70;   // ancho pieza
 ytotal = ytuerca1 + ycilindro + ytuerca2; // largo pieza
 ydescentre = (ytuerca2 - ytuerca1)/2; // offset largo
-zbase = 3;  // alto base pieza
+zbase = 6;  // alto base pieza
 
 zvarilla = 25.2; // separacion del centro de la varilla al suelo
 ztotal = zvarilla*2;
 
-dagujeros = 6;   // diametro agujeros en el suelo
-dagujeros2 = 4;   // diametro agujeros para la arandela de presion
+dagujeros = 4;   // diametro agujeros en el suelo
+dagujeros2 = 3;   // diametro agujeros para la arandela de presion
 fagujeros = 0.2; // factor de pegado al borde de los agujeros (entre 0-0.25)
 
 module triangulo() {
-    linear_extrude(zbase*2, center=true) 
+    linear_extrude(zbase, center=true) 
         polygon([[-ytotal/2, zbase], [-zbase/2, ztotal], [zbase/2, ztotal],  [ytotal/2, zbase]]);
 }
 
@@ -65,12 +65,13 @@ module pieza1 () {
                     translate([0, 0, zbase/2]) 
                         cube([xtotal, ytotal, zbase], center=true);
                     // el triangulo
-                    translate([-xtotal/2+zbase, 0, 0])
+                    translate([-xtotal/2+zbase/2, 0, 0])
                         rotate([90, 0, 90])
                             triangulo();
-                    translate([xtotal/2-zbase, 0, 0])
+                    translate([+xtotal/2-zbase/2, 0, 0])
                         rotate([90, 0, 90])
                             triangulo();
+                    // la vertical
                     translate([0, 0, ztotal/2])
                         cube([xtotal, zbase, ztotal], center=true);
                 }
@@ -79,8 +80,8 @@ module pieza1 () {
             translate([0, -ydescentre, zvarilla])
                 rotate([90, 0, 0]) 
                     hull() {
-                        translate([0, +hull/2, 0]) cylinder(d=dcilindro*1.2, h=ycilindro, $fn=20, center=true);
-                        translate([0, -hull/2, 0]) cylinder(d=dcilindro*1.2, h=ycilindro, $fn=20, center=true);
+                        translate([0, +hull/2, 0]) cylinder(d=dcilindro*1.2, h=zbase*1.01, $fn=20, center=true);
+                        translate([0, -hull/2, 0]) cylinder(d=dcilindro*1.2, h=zbase*1.01, $fn=20, center=true);
                     }
             // los agujeros en la base
             for (x=[fagujeros, 1-fagujeros])
@@ -90,22 +91,34 @@ module pieza1 () {
                             translate([-hull/2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
                             translate([+hull/2, 0, 0]) cylinder(d=dagujeros, h=zbase*1.01, center=true);
                         }
-            translate([0, -ydescentre+zbase, zvarilla])
+            translate([0, -ydescentre+zbase/2, zvarilla])
                 rotate([90, 0, 0])
-                    agujeros(2*zbase, hull=4);
-                
+                    agujeros(zbase, hull=4);
+            translate([0, -ydescentre, dtuerca*1.7/2+zbase]) {
+                for (z=[-zbase*2-zbase/2, zbase*2+zbase/2])
+                    translate([0, z, 0])
+                        rotate([90, 0, 0]) 
+                            hull() {
+                                translate([0, -hull/2, 0]) cylinder(d=dtuerca*1.9, h=zbase*4, $fn=30, center=true);
+                                translate([0, +hull/2, 0]) cylinder(d=dtuerca*1.9, h=zbase*4, $fn=30, center=true);
+                            }
+            }
+                    
         }
 }
 
-module pieza2(h1=zbase, h2=2*zbase, bandas=true) {
+module pieza2(h1=0, h2=zbase, bandas=true) {
     h = h1 + h2;
     difference() {
+        // pieza trabajo a la que restar
         translate([0, 0, h/2])
             cylinder(d=dtuerca*1.7, h=h, $fn=30, center=true);
 
+        // agujero de tuerca solo en un lado
         translate([0, 0, h1+h2/2])
             cylinder(d=dtuerca, h=h2*1.01, $fn=6, center=true);
 
+        // agujero redondo grande en otro lado
         translate([0, 0, h1/2])
             cylinder(d=dcilindro*1.2, h=h1*1.01, $fn=20, center=true);
 
@@ -116,11 +129,17 @@ module pieza2(h1=zbase, h2=2*zbase, bandas=true) {
     }
 }
 
-pieza1();
-translate([0, 60, 0]) 
-    pieza2();
-translate([0, -60, 0]) 
-    pieza2(bandas=false);
+rotate([0, 0, 250]) {
+    pieza1();
+    translate([+20, 60, 0]) 
+        pieza2(h2=9);
+    translate([-20, 60, 0]) 
+        pieza2(h1=3, h2=0, bandas=false);
+    translate([-20, -60, 0]) 
+        pieza2(h1=3, h2=0, bandas=false);
+    translate([+20, -60, 0]) 
+        pieza2(h2=9, bandas=false);
+}
 
 /*
 %translate([0, 70, zvarilla]) 
