@@ -129,7 +129,7 @@ module pieza2(h1=0, h2=zbase, bandas=true) {
     }
 }
 
-rotate([0, 0, 250]) {
+rotate([0, 0, 0]) {
     pieza1();
     translate([+20, 60, 0]) 
         pieza2(h2=9);
